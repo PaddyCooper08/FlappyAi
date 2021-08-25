@@ -92,7 +92,7 @@ class Pipe:
 
         self.top = 0
         self.bottom = 0
-        self.PIPE_TOP = pygame.transform.flip(PIPE_IMG, Flase, True)
+        self.PIPE_TOP = pygame.transform.flip(PIPE_IMG, False, True)
         self.PIPE_BOTTOM = PIPE_IMG
 
         self.passed = False
@@ -150,17 +150,28 @@ class Base:
         if self.x2 + self.WIDTH < 0:
             self.x2 = self.x1 + self.WIDTH
 
+    def draw(self, win):
+        win.blit(self.IMG, (self.x1, self.y))
+        win.blit(self.IMG, (self.x2, self.y))
 
-def draw_window(win, bird):
+
+def draw_window(win, bird, pipes, base):
     win.blit(BG_IMG, (0, 0))
+    for pipe in pipes:
+        pipe.draw(win)
+    base.draw(win)
     bird.draw(win)
     pygame.display.update()
 
 
 def main():
-    bird = Bird(200, 200)
+    bird = Bird(230, 350)
+    base = Base(730)
+    pipes = [Pipe(700)]
     win = pygame.display.set_mode((MIN_WIDTH, MIN_HEIGHT))
     clock = pygame.time.Clock()
+    score = 0
+
     run = True
     while run:
         clock.tick(30)
@@ -168,7 +179,27 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
         # bird.move()
-        draw_window(win, bird)
+        add_pipe = False
+        rem = []
+        for pipe in pipes:
+
+            if pipe.collide(bird):
+                pass
+            if pipe.x + pipe.PIPE_TOP.get_width() < 0:
+                rem.append(pipe)
+            if not pipe.passed and pipe.x < bird.x:
+                pipe.passed = True
+                add_pipe = True
+
+            pipe.move()
+        if add_pipe:
+            score += 1
+            pipes.append(Pipe(700))
+
+        for r in rem:
+            pipes.remove(r)
+        base.move()
+        draw_window(win, bird, pipes, base)
     pygame.quit()
     quit()
 
